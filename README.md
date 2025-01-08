@@ -88,7 +88,7 @@ See cmd/main.go and tests for more examples.
 ## Supported types
 - `string` - the default type for all provided filters if not specified another. Could be compared by `eq, ne, gt, lt, gte, lte, like, ilike, nlike, nilike, in, nin, is, not` methods (`nlike, nilike` means `NOT LIKE, NOT ILIKE` respectively, `in, nin` means `IN, NOT IN` respectively, `is, not` for comparison to NULL `IS NULL, IS NOT NULL`).
 - `int` - integer type. Must be specified with tag ":int". Could be compared by `eq, ne, gt, lt, gte, lte, in, nin` methods.
-- `float` - integer type. Must be specified with tag ":float". Could be compared by `eq, ne, gt, lt, gte, lte, in, nin` methods. However, avoid the `eq, ne, in, nin` methods.
+- `float` - float type. Must be specified with tag ":float". Could be compared by `eq, ne, gt, lt, gte, lte, in, nin` methods. However, avoid the `eq, ne, in, nin` methods.
 - `time.Time` - time.Time type. Must be specified with tag ":time". Could be compared by `eq, ne, gt, lt, gte, lte, in, nin` methods.
 - `bool` - boolean type. Must be specified with tag ":bool". Could be compared by `eq` method.
 
