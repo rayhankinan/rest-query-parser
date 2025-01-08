@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type StateOR byte
@@ -55,6 +56,8 @@ func detectType(name string, validations Validations) string {
 					return "int"
 				case "float", "f":
 					return "float"
+				case "time", "t":
+					return "time"
 				case "bool", "b":
 					return "bool"
 				default:
@@ -110,10 +113,23 @@ func newFilter(rawKey string, value string, delimiter string, validations Valida
 }
 
 func (f *Filter) validate(validate ValidationFunc) error {
-
 	switch f.Value.(type) {
 	case []int:
 		for _, v := range f.Value.([]int) {
+			err := validate(v)
+			if err != nil {
+				return err
+			}
+		}
+	case []float32:
+		for _, v := range f.Value.([]float32) {
+			err := validate(v)
+			if err != nil {
+				return err
+			}
+		}
+	case []time.Time:
+		for _, v := range f.Value.([]time.Time) {
 			err := validate(v)
 			if err != nil {
 				return err
@@ -126,7 +142,7 @@ func (f *Filter) validate(validate ValidationFunc) error {
 				return err
 			}
 		}
-	case int, bool, string:
+	case int, float32, bool, string, time.Time:
 		err := validate(f.Value)
 		if err != nil {
 			return err
@@ -186,6 +202,11 @@ func (f *Filter) parseValue(valueType string, value string, delimiter string) er
 		}
 	case "float":
 		err := f.setFloat(list)
+		if err != nil {
+			return err
+		}
+	case "time":
+		err := f.setTime(list)
 		if err != nil {
 			return err
 		}
@@ -319,6 +340,35 @@ func (f *Filter) setFloat(list []string) error {
 			floatSlice[i] = float32(v)
 		}
 		f.Value = floatSlice
+	}
+	return nil
+}
+
+func (f *Filter) setTime(list []string) error {
+	if len(list) == 1 {
+		switch f.Method {
+		case EQ, NE, GT, LT, GTE, LTE, IN, NIN:
+			i, err := time.Parse(time.RFC3339, list[0])
+			if err != nil {
+				return ErrBadFormat
+			}
+			f.Value = i
+		default:
+			return ErrMethodNotAllowed
+		}
+	} else {
+		if f.Method != IN && f.Method != NIN {
+			return ErrMethodNotAllowed
+		}
+		timeSlice := make([]time.Time, len(list))
+		for i, s := range list {
+			v, err := time.Parse(time.RFC3339, s)
+			if err != nil {
+				return ErrBadFormat
+			}
+			timeSlice[i] = v
+		}
+		f.Value = timeSlice
 	}
 	return nil
 }

@@ -22,7 +22,7 @@ func main() {
 	//
 	// Field is enumerated in the Filter "fields" field which lib must put into SELECT statement.
 
-	url, _ := url.Parse("http://localhost/?sort=+name,-id&limit=10&id=1&i[eq]=5&s[eq]=one&email[like]=*tim*|name[like]=*tim*")
+	url, _ := url.Parse("http://localhost/?sort=+name,-id&limit=10&id=1&f=5.0&i[eq]=5&s[eq]=one&email[like]=*tim*|name[like]=*tim*&t=2020-01-01T00:00:00Z")
 	q, err := rqp.NewParse(url.Query(), rqp.Validations{
 		// FORMAT: [field name] : [ ValidationFunc | nil ]
 
@@ -37,14 +37,21 @@ func main() {
 
 		"s":      rqp.In("one", "two"), // filter: s - string and equal
 		"id:int": nil,                  // filter: id is integer without additional validation
+		"f:float": func(value interface{}) error {
+			if value.(float32) > 1.0 && value.(float32) < 10.0 {
+				return nil
+			}
+			return errors.New("f: must be greater then 1.0 and lower then 10.0")
+		},
 		"i:int": func(value interface{}) error { // filter: custom func for validating
 			if value.(int) > 1 && value.(int) < 10 {
 				return nil
 			}
 			return errors.New("i: must be greater then 1 and lower then 10")
 		},
-		"email": nil,
-		"name":  nil,
+		"t:time": nil, // filter: time.Time with RFC3339 format
+		"email":  nil,
+		"name":   nil,
 	})
 
 	if err != nil {
