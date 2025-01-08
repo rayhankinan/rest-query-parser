@@ -56,8 +56,8 @@ func detectType(name string, validations Validations) string {
 					return "int"
 				case "float", "f":
 					return "float"
-				case "time", "t":
-					return "time"
+				case "timestamp", "t":
+					return "timestamp"
 				case "bool", "b":
 					return "bool"
 				default:
@@ -205,7 +205,7 @@ func (f *Filter) parseValue(valueType string, value string, delimiter string) er
 		if err != nil {
 			return err
 		}
-	case "time":
+	case "timestamp":
 		err := f.setTime(list)
 		if err != nil {
 			return err

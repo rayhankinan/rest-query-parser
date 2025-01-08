@@ -49,9 +49,9 @@ func main() {
 			}
 			return errors.New("i: must be greater then 1 and lower then 10")
 		},
-		"t:time": nil, // filter: time.Time with RFC3339 format
-		"email":  nil,
-		"name":   nil,
+		"t:timestamp": nil, // filter: time.Time with RFC3339 format
+		"email":       nil,
+		"name":        nil,
 	})
 
 	if err != nil {

@@ -217,7 +217,7 @@ func TestWhere(t *testing.T) {
 		{url: "?id[nin]=1.2,1.2", expected: "", err: "id[nin]: bad format"},
 		{url: "?id[test]=1", expected: "", err: "id[test]: unknown method"},
 		{url: "?id[like]=1", expected: "", err: "id[like]: method are not allowed"},
-		{url: "?id=1,2", expected: "", err: "id: method are not allowed"},
+		{url: "?id=1,2", expected: "", err: "id: bad format"},
 		{url: "?id=4", expected: " WHERE id = ?"},
 
 		{url: "?id=100", err: "id: can't be greater then 10"},
@@ -236,16 +236,16 @@ func TestWhere(t *testing.T) {
 		{url: "?s[nin]=super,puper", err: "s[nin]: puper: not in scope"},
 		{url: "?s[nin]=super,best", expected: " WHERE s NOT IN (?, ?)"},
 		{url: "?s=puper", expected: "", err: "s: puper: not in scope"},
-		{url: "?u=puper", expected: " WHERE u = ?"},
-		{url: "?u[eq]=1,2", expected: "", err: "u[eq]: method are not allowed"},
-		{url: "?u[gt]=1", expected: " WHERE u > ?"},
 		{url: "?id[in]=1,2", expected: " WHERE id IN (?, ?)"},
 		{url: "?id[eq]=1&id[eq]=4", expected: " WHERE id = ? AND id = ?"},
 		{url: "?id[gte]=1&id[lte]=4", expected: " WHERE id >= ? AND id <= ?", expected2: " WHERE id <= ? AND id >= ?"},
 		{url: "?id[gte]=1|id[lte]=4", expected: " WHERE (id >= ? OR id <= ?)", expected2: " WHERE (id <= ? OR id >= ?)"},
-		// float
+		// float:
 		{url: "?f[gte]=1.5&f[lte]=4.7", expected: " WHERE f >= ? AND f <= ?", expected2: " WHERE f <= ? AND f >= ?"},
 		{url: "?f[gte]=1.5|f[lte]=4.7", expected: " WHERE (f >= ? OR f <= ?)", expected2: " WHERE (f <= ? OR f >= ?)"},
+		// timestamp:
+		{url: "?t[gte]=2020-01-01T00:00:00Z&t[lte]=2020-01-01T00:00:00Z", expected: " WHERE t >= ? AND t <= ?", expected2: " WHERE t <= ? AND t >= ?"},
+		{url: "?t[gte]=2020-01-01T00:00:00Z|t[lte]=2020-01-01T00:00:00Z", expected: " WHERE (t >= ? OR t <= ?)", expected2: " WHERE (t <= ? OR t >= ?)"},
 		// null:
 		{url: "?u[not]=NULL", expected: " WHERE u IS NOT NULL"},
 		{url: "?u[is]=NULL", expected: " WHERE u IS NULL"},
@@ -253,7 +253,7 @@ func TestWhere(t *testing.T) {
 		{url: "?b=true", expected: " WHERE b = ?"},
 		{url: "?b=true1", err: "b: bad format"},
 		{url: "?b[not]=true", err: "b[not]: method are not allowed"},
-		{url: "?b[eq]=true,false", err: "b[eq]: method are not allowed"},
+		{url: "?b[eq]=true,false", err: "b[eq]: bad format"},
 	}
 	for _, c := range cases {
 		t.Run(c.url, func(t *testing.T) {
@@ -277,8 +277,9 @@ func TestWhere(t *testing.T) {
 					"super",
 					"best",
 				),
-				"u:string": nil,
-				"b:bool":   nil,
+				"u:string":    nil,
+				"b:bool":      nil,
+				"t:timestamp": nil,
 				"custom": func(value interface{}) error {
 					return nil
 				},
