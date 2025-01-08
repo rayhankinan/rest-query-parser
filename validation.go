@@ -3,6 +3,7 @@ package rqp
 import (
 	"time"
 
+	"cloud.google.com/go/civil"
 	"github.com/pkg/errors"
 )
 
@@ -126,7 +127,7 @@ func MinMaxFloat(min, max float32) ValidationFunc {
 func MinTime(min time.Time) ValidationFunc {
 	return func(value interface{}) error {
 		if limit, ok := value.(time.Time); ok {
-			if limit.After(min) || limit.Equal(min) {
+			if limit.Compare(min) >= 0 {
 				return nil
 			}
 		}
@@ -138,7 +139,7 @@ func MinTime(min time.Time) ValidationFunc {
 func MaxTime(max time.Time) ValidationFunc {
 	return func(value interface{}) error {
 		if limit, ok := value.(time.Time); ok {
-			if limit.Before(max) || limit.Equal(max) {
+			if limit.Compare(max) <= 0 {
 				return nil
 			}
 		}
@@ -150,7 +151,79 @@ func MaxTime(max time.Time) ValidationFunc {
 func MinMaxTime(min, max time.Time) ValidationFunc {
 	return func(value interface{}) error {
 		if limit, ok := value.(time.Time); ok {
-			if (min.Before(limit) || min.Equal(limit)) && (limit.Before(max) || limit.Equal(max)) {
+			if limit.Compare(min) >= 0 && limit.Compare(max) <= 0 {
+				return nil
+			}
+		}
+		return errors.Wrapf(ErrNotInScope, "%v", value)
+	}
+}
+
+// MinDate validation if value greater or equal then min
+func MinDate(min civil.Date) ValidationFunc {
+	return func(value interface{}) error {
+		if limit, ok := value.(civil.Date); ok {
+			if limit.Compare(min) >= 0 {
+				return nil
+			}
+		}
+		return errors.Wrapf(ErrNotInScope, "%v", value)
+	}
+}
+
+// MaxDate validation if value lower or equal then max
+func MaxDate(max civil.Date) ValidationFunc {
+	return func(value interface{}) error {
+		if limit, ok := value.(civil.Date); ok {
+			if limit.Compare(max) <= 0 {
+				return nil
+			}
+		}
+		return errors.Wrapf(ErrNotInScope, "%v", value)
+	}
+}
+
+// MinMaxDate validation if value between or equal min and max
+func MinMaxDate(min, max civil.Date) ValidationFunc {
+	return func(value interface{}) error {
+		if limit, ok := value.(civil.Date); ok {
+			if limit.Compare(min) >= 0 && limit.Compare(max) <= 0 {
+				return nil
+			}
+		}
+		return errors.Wrapf(ErrNotInScope, "%v", value)
+	}
+}
+
+// MinDateTime validation if value greater or equal then min
+func MinDateTime(min civil.DateTime) ValidationFunc {
+	return func(value interface{}) error {
+		if limit, ok := value.(civil.DateTime); ok {
+			if limit.Compare(min) >= 0 {
+				return nil
+			}
+		}
+		return errors.Wrapf(ErrNotInScope, "%v", value)
+	}
+}
+
+// MaxDateTime validation if value lower or equal then max
+func MaxDateTime(max civil.DateTime) ValidationFunc {
+	return func(value interface{}) error {
+		if limit, ok := value.(civil.DateTime); ok {
+			if limit.Compare(max) <= 0 {
+				return nil
+			}
+		}
+		return errors.Wrapf(ErrNotInScope, "%v", value)
+	}
+}
+
+// MinMaxDateTime validation if value between or equal min and max
+func MinMaxDateTime(min, max civil.DateTime) ValidationFunc {
+	return func(value interface{}) error {
+		if limit, ok := value.(civil.DateTime); ok {
+			if limit.Compare(min) >= 0 && limit.Compare(max) <= 0 {
 				return nil
 			}
 		}

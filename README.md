@@ -35,7 +35,7 @@ See cmd/main.go and tests for more examples.
     )
     
     func main() {
-        url, _ := url.Parse("http://localhost/?sort=+name,-id&limit=10&id=1&f=5.0&i[eq]=5&s[eq]=one&email[like]=*tim*|name[like]=*tim*&t=2020-01-01T00:00:00Z")
+        url, _ := url.Parse("http://localhost/?sort=+name,-id&limit=10&id=1&f=5.0&i[eq]=5&s[eq]=one&email[like]=*tim*|name[like]=*tim*&t=2020-01-01T00:00:00Z&d=2020-01-01&dt=2020-01-01T00:00:00")
         q, _ := rqp.NewParse(url.Query(), rqp.Validations{
             "limit:required": rqp.MinMax(10, 100),  // limit must present in the Query part and must be between 10 and 100 (default: Min(1))
             "sort":           rqp.In("id", "name"), // sort could be or not in the query but if it is present it must be equal to "in" or "name"
@@ -54,6 +54,8 @@ See cmd/main.go and tests for more examples.
                 return errors.New("i: must be greater then 1 and lower then 10")
             },
             "t:timestamp": nil, // filter: time.Time with RFC3339 format
+            "d:date":      nil, // filter: BigQuery date format
+		    "dt:datetime": nil, // filter: BigQuery datetime format
             "email": nil,
             "name":  nil,
         })
@@ -83,6 +85,8 @@ See cmd/main.go and tests for more examples.
 * `:int` - parameter must be convertable to int type. Raise error if not.
 * `:float` - parameter must be convertable to float32 type. Raise error if not.
 * `:timestamp` - parameter must be convertable to time.Time type with RFC3339 format. Raise error if not.
+* `:date` - parameter must be convertable to civil.Date type with BigQuery date format. Raise error if not.
+* `:datetime` - parameter must be convertable to civil.DateTime type with BigQuery datetime format. Raise error if not.
 * `:bool` - parameter must be convertable to bool type. Raise error if not.
 
 ## Supported types
@@ -90,6 +94,8 @@ See cmd/main.go and tests for more examples.
 - `int` - integer type. Must be specified with tag ":int". Could be compared by `eq, ne, gt, lt, gte, lte, in, nin` methods.
 - `float` - float type. Must be specified with tag ":float". Could be compared by `eq, ne, gt, lt, gte, lte, in, nin` methods. However, avoid the `eq, ne, in, nin` methods.
 - `time.Time` - time.Time type. Must be specified with tag ":timestamp". Could be compared by `eq, ne, gt, lt, gte, lte, in, nin` methods.
+- `civil.Date` - civil.Date type. Must be specified with tag ":date". Could be compared by `eq, ne, gt, lt, gte, lte, in, nin` methods.
+- `civil.DateTime` - civil.DateTime type. Must be specified with tag ":datetime". Could be compared by `eq, ne, gt, lt, gte, lte, in, nin` methods.
 - `bool` - boolean type. Must be specified with tag ":bool". Could be compared by `eq` method.
 
 ## Date usage

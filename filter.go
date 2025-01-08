@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"cloud.google.com/go/civil"
 )
 
 type StateOR byte
@@ -58,6 +60,10 @@ func detectType(name string, validations Validations) string {
 					return "float"
 				case "timestamp", "t":
 					return "timestamp"
+				case "date", "d":
+					return "date"
+				case "datetime", "dt":
+					return "datetime"
 				case "bool", "b":
 					return "bool"
 				default:
@@ -135,6 +141,20 @@ func (f *Filter) validate(validate ValidationFunc) error {
 				return err
 			}
 		}
+	case []civil.Date:
+		for _, v := range f.Value.([]civil.Date) {
+			err := validate(v)
+			if err != nil {
+				return err
+			}
+		}
+	case []civil.DateTime:
+		for _, v := range f.Value.([]civil.DateTime) {
+			err := validate(v)
+			if err != nil {
+				return err
+			}
+		}
 	case []string:
 		for _, v := range f.Value.([]string) {
 			err := validate(v)
@@ -142,7 +162,7 @@ func (f *Filter) validate(validate ValidationFunc) error {
 				return err
 			}
 		}
-	case int, float32, bool, string, time.Time:
+	case int, float32, bool, string, time.Time, civil.Date, civil.DateTime:
 		err := validate(f.Value)
 		if err != nil {
 			return err
@@ -206,7 +226,17 @@ func (f *Filter) parseValue(valueType string, value string, delimiter string) er
 			return err
 		}
 	case "timestamp":
-		err := f.setTime(list)
+		err := f.setTimestamp(list)
+		if err != nil {
+			return err
+		}
+	case "date":
+		err := f.setDate(list)
+		if err != nil {
+			return err
+		}
+	case "datetime":
+		err := f.setDateTime(list)
 		if err != nil {
 			return err
 		}
@@ -344,7 +374,7 @@ func (f *Filter) setFloat(list []string) error {
 	return nil
 }
 
-func (f *Filter) setTime(list []string) error {
+func (f *Filter) setTimestamp(list []string) error {
 	if len(list) == 1 {
 		switch f.Method {
 		case EQ, NE, GT, LT, GTE, LTE, IN, NIN:
@@ -370,6 +400,65 @@ func (f *Filter) setTime(list []string) error {
 		}
 		f.Value = timeSlice
 	}
+	return nil
+}
+
+func (f *Filter) setDate(list []string) error {
+	if len(list) == 1 {
+		switch f.Method {
+		case EQ, NE, GT, LT, GTE, LTE, IN, NIN:
+			i, err := civil.ParseDate(list[0])
+			if err != nil {
+				return ErrBadFormat
+			}
+			f.Value = i
+		default:
+			return ErrMethodNotAllowed
+		}
+	} else {
+		if f.Method != IN && f.Method != NIN {
+			return ErrMethodNotAllowed
+		}
+		dateSlice := make([]civil.Date, len(list))
+		for i, s := range list {
+			v, err := civil.ParseDate(s)
+			if err != nil {
+				return ErrBadFormat
+			}
+			dateSlice[i] = v
+		}
+		f.Value = dateSlice
+	}
+	return nil
+}
+
+func (f *Filter) setDateTime(list []string) error {
+	if len(list) == 1 {
+		switch f.Method {
+		case EQ, NE, GT, LT, GTE, LTE, IN, NIN:
+			i, err := civil.ParseDateTime(list[0])
+			if err != nil {
+				return ErrBadFormat
+			}
+			f.Value = i
+		default:
+			return ErrMethodNotAllowed
+		}
+	} else {
+		if f.Method != IN && f.Method != NIN {
+			return ErrMethodNotAllowed
+		}
+		dateTimeSlice := make([]civil.DateTime, len(list))
+		for i, s := range list {
+			v, err := civil.ParseDateTime(s)
+			if err != nil {
+				return ErrBadFormat
+			}
+			dateTimeSlice[i] = v
+		}
+		f.Value = dateTimeSlice
+	}
+
 	return nil
 }
 

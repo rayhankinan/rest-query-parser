@@ -246,6 +246,12 @@ func TestWhere(t *testing.T) {
 		// timestamp:
 		{url: "?t[gte]=2020-01-01T00:00:00Z&t[lte]=2020-01-01T00:00:00Z", expected: " WHERE t >= ? AND t <= ?", expected2: " WHERE t <= ? AND t >= ?"},
 		{url: "?t[gte]=2020-01-01T00:00:00Z|t[lte]=2020-01-01T00:00:00Z", expected: " WHERE (t >= ? OR t <= ?)", expected2: " WHERE (t <= ? OR t >= ?)"},
+		// date:
+		{url: "?d[gte]=2020-01-01&d[lte]=2020-01-01", expected: " WHERE d >= ? AND d <= ?", expected2: " WHERE d <= ? AND d >= ?"},
+		{url: "?d[gte]=2020-01-01|d[lte]=2020-01-01", expected: " WHERE (d >= ? OR d <= ?)", expected2: " WHERE (d <= ? OR d >= ?)"},
+		// datetime:
+		{url: "?dt[gte]=2020-01-01T00:00:00&dt[lte]=2020-01-01T00:00:00", expected: " WHERE dt >= ? AND dt <= ?", expected2: " WHERE dt <= ? AND dt >= ?"},
+		{url: "?dt[gte]=2020-01-01T00:00:00|dt[lte]=2020-01-01T00:00:00", expected: " WHERE (dt >= ? OR dt <= ?)", expected2: " WHERE (dt <= ? OR dt >= ?)"},
 		// null:
 		{url: "?u[not]=NULL", expected: " WHERE u IS NOT NULL"},
 		{url: "?u[is]=NULL", expected: " WHERE u IS NULL"},
@@ -280,6 +286,8 @@ func TestWhere(t *testing.T) {
 				"u:string":    nil,
 				"b:bool":      nil,
 				"t:timestamp": nil,
+				"d:date":      nil,
+				"dt:datetime": nil,
 				"custom": func(value interface{}) error {
 					return nil
 				},

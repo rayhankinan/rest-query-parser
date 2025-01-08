@@ -5,6 +5,7 @@ go 1.21
 toolchain go1.23.0
 
 require (
+	cloud.google.com/go v0.118.0
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/google/uuid v1.6.0
 	github.com/pkg/errors v0.9.1

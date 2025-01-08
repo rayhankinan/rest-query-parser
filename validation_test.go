@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"cloud.google.com/go/civil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -127,6 +128,90 @@ func TestMinMaxTime(t *testing.T) {
 	assert.Equal(t, errors.Cause(err), ErrNotInScope)
 
 	err = MinMaxTime(yesterday, tomorrow)("one")
+	assert.Equal(t, errors.Cause(err), ErrNotInScope)
+	assert.EqualError(t, err, "one: not in scope")
+}
+
+func TestMinMaxDate(t *testing.T) {
+	current, err := civil.ParseDate("2019-01-01")
+	assert.NoError(t, err)
+
+	yesterday, err := civil.ParseDate("2018-12-31")
+	assert.NoError(t, err)
+
+	tomorrow, err := civil.ParseDate("2019-01-02")
+	assert.NoError(t, err)
+
+	err = MaxDate(current)(tomorrow)
+	assert.Equal(t, errors.Cause(err), ErrNotInScope)
+	assert.EqualError(t, err, "2019-01-02: not in scope")
+
+	err = MaxDate(current)(current)
+	assert.NoError(t, err)
+
+	err = MinDate(current)(current)
+	assert.NoError(t, err)
+
+	err = MinMaxDate(current, tomorrow)(yesterday)
+	assert.Equal(t, errors.Cause(err), ErrNotInScope)
+	assert.EqualError(t, err, "2018-12-31: not in scope")
+
+	err = MinMaxDate(yesterday, current)(tomorrow)
+	assert.Equal(t, errors.Cause(err), ErrNotInScope)
+	assert.EqualError(t, err, "2019-01-02: not in scope")
+
+	err = MinMaxDate(yesterday, tomorrow)(current)
+	assert.NoError(t, err)
+
+	err = Multi(MinDate(yesterday), MaxDate(tomorrow))(current)
+	assert.NoError(t, err)
+
+	err = Multi(MinDate(yesterday), MaxDate(current))(tomorrow)
+	assert.Equal(t, errors.Cause(err), ErrNotInScope)
+
+	err = MinMaxDate(yesterday, tomorrow)("one")
+	assert.Equal(t, errors.Cause(err), ErrNotInScope)
+	assert.EqualError(t, err, "one: not in scope")
+}
+
+func TestMinMaxDateTime(t *testing.T) {
+	current, err := civil.ParseDateTime("2019-01-01T00:00:00")
+	assert.NoError(t, err)
+
+	yesterday, err := civil.ParseDateTime("2018-12-31T00:00:00")
+	assert.NoError(t, err)
+
+	tomorrow, err := civil.ParseDateTime("2019-01-02T00:00:00")
+	assert.NoError(t, err)
+
+	err = MaxDateTime(current)(tomorrow)
+	assert.Equal(t, errors.Cause(err), ErrNotInScope)
+	assert.EqualError(t, err, "2019-01-02T00:00:00: not in scope")
+
+	err = MaxDateTime(current)(current)
+	assert.NoError(t, err)
+
+	err = MinDateTime(current)(current)
+	assert.NoError(t, err)
+
+	err = MinMaxDateTime(current, tomorrow)(yesterday)
+	assert.Equal(t, errors.Cause(err), ErrNotInScope)
+	assert.EqualError(t, err, "2018-12-31T00:00:00: not in scope")
+
+	err = MinMaxDateTime(yesterday, current)(tomorrow)
+	assert.Equal(t, errors.Cause(err), ErrNotInScope)
+	assert.EqualError(t, err, "2019-01-02T00:00:00: not in scope")
+
+	err = MinMaxDateTime(yesterday, tomorrow)(current)
+	assert.NoError(t, err)
+
+	err = Multi(MinDateTime(yesterday), MaxDateTime(tomorrow))(current)
+	assert.NoError(t, err)
+
+	err = Multi(MinDateTime(yesterday), MaxDateTime(current))(tomorrow)
+	assert.Equal(t, errors.Cause(err), ErrNotInScope)
+
+	err = MinMaxDateTime(yesterday, tomorrow)("one")
 	assert.Equal(t, errors.Cause(err), ErrNotInScope)
 	assert.EqualError(t, err, "one: not in scope")
 }

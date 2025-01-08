@@ -22,7 +22,7 @@ func main() {
 	//
 	// Field is enumerated in the Filter "fields" field which lib must put into SELECT statement.
 
-	url, _ := url.Parse("http://localhost/?sort=+name,-id&limit=10&id=1&f=5.0&i[eq]=5&s[eq]=one&email[like]=*tim*|name[like]=*tim*&t=2020-01-01T00:00:00Z")
+	url, _ := url.Parse("http://localhost/?sort=+name,-id&limit=10&id=1&f=5.0&i[eq]=5&s[eq]=one&email[like]=*tim*|name[like]=*tim*&t=2020-01-01T00:00:00Z&d=2020-01-01&dt=2020-01-01T00:00:00")
 	q, err := rqp.NewParse(url.Query(), rqp.Validations{
 		// FORMAT: [field name] : [ ValidationFunc | nil ]
 
@@ -50,6 +50,8 @@ func main() {
 			return errors.New("i: must be greater then 1 and lower then 10")
 		},
 		"t:timestamp": nil, // filter: time.Time with RFC3339 format
+		"d:date":      nil, // filter: BigQuery date format
+		"dt:datetime": nil, // filter: BigQuery datetime format
 		"email":       nil,
 		"name":        nil,
 	})
